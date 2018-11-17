@@ -92,7 +92,7 @@ class SampleApp:
 
         controls = Controls(master, screen)
         controls.pack(side=tk.TOP)
-        controls.config(highlightbackground="green", highlightcolor="green", highlightthickness=5)
+        controls.config(highlightbackground="green", highlightcolor="green", highlightthickness=100)
 
         inputCommand = InputCommand(master, screen)
         inputCommand.pack(side=tk.TOP)
