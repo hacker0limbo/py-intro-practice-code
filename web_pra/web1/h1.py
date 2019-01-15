@@ -7,6 +7,7 @@ send 函数和 recv 函数返回值都是 bytes 类型
 """
 import socket
 
+
 def protocol_of_url(url: str):
     """
     url 是字符串, 可能的值如下
@@ -148,6 +149,7 @@ def get(url: str):
     protocol, host, port, path = parsed_url(url)
     print(host, port)
     s.connect((host, port))
+    # host 一定要写
     http_request = 'GET {} HTTP/1.1\r\nhost:{}\r\nConnection: close\r\n\r\n'.format(path, host)
     req = http_request.encode('utf-8')
     s.send(req)
@@ -155,9 +157,9 @@ def get(url: str):
     data = ''
     while True:
         res = s.recv(1024).decode('utf-8')
-        if len(res) == 0:
-            break
         data += res
+        if len(res) < 1024:
+            break
     s.close()
     return data
 
@@ -168,9 +170,11 @@ def parsed_response(r: str):
     返回 状态码(int), headers(dict), body(str)
 
     res 格式如下:
-    HTTP/1.1 200 OK (\r\n, status code)
-    Date: Sun, 13 Jan 2019 12:05:29 GMT (\r\n)
-    Content-Type: text/html; charset=utf-8 (\r\n)
+    HTTP/1.1 200 OK (响应部分)
+    Date: Sun, 13 Jan 2019 12:05:29 GMT (headers 开始)
+    Content-Type: text/html; charset=utf-8
+
+    body
     """
     header, body = r.split('\r\n\r\n', 1)
     h = header.split('\r\n')
