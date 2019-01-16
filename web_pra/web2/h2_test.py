@@ -2,6 +2,7 @@ import unittest
 from h2 import (
     path_with_query,
     header_from_dict,
+    value_from_element,
 )
 
 
@@ -26,6 +27,14 @@ class TestH1(unittest.TestCase):
         }
         header = 'Content-Type: text/html\r\nContent-Length: 127\r\n'
         self.assertEqual(header_from_dict(headers), header)
+
+    def test_value_from_element(self):
+        html = """<ol>
+            <li class="name">gua</li>
+        </ol>
+        """
+        element = '<li class="name">gua</li>'
+        self.assertEqual(value_from_element(html, element), 'gua')
 
     @classmethod
     def setUpClass(cls):
