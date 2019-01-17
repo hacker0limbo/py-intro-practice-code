@@ -2,7 +2,7 @@ import socket
 
 # '' 表示接受接受任意 ip 地址的连接, 若为 127.0.0.1 表示本机
 host = ''
-port = 3000
+port = 2000
 
 s = socket.socket()
 s.bind((host, port))

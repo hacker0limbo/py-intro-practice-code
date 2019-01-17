@@ -34,3 +34,22 @@ m = {'a':1, 'b':2}
 f(*n) # 4
 f(**m) # 3
 ```
+
+## 表单验证
+
+### html
+```html
+<form action="/" method="get">
+    <label for="user"></label>
+    <input name="user" id="user" value="">
+    <button type="submit"></button>
+</form>
+```
+action 表示发送以后发送新的请求的路径, method 表示方法
+
+### get 和 post
+使用 get 方法发送的数据附在了请求的 url 里面, 如上请求的 url 为: `/?user=xxx`
+
+使用 post 方法发送的数据在 body 里面, 如上为: `user=xxx`
+
+点击了 button 都会发送一个新的请求, 请求里面就有发送的数据, 所以页面可能刷新或者前往新的页面, 因此可以在 js 里面用 `e.prevenDefault()` 来阻止页面刷新

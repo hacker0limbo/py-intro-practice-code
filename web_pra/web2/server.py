@@ -5,9 +5,8 @@ def page(name):
     """
     读取普通文件, 参数为文件名
     """
-    with open(name, 'r', encoding='utf-8') as f:
-        page = f.read()
-        return page
+    with open(name, 'r') as f:
+        return f.read()
 
 
 def img(name):
@@ -15,8 +14,7 @@ def img(name):
     读取图片文件, 二进制格式
     """
     with open(name, 'rb') as f:
-        image = f.read()
-        return image
+        return f.read()
 
 
 def route_index():
@@ -54,7 +52,7 @@ def error(code=404):
     404 页面处理函数
     """
     response = {
-        404: b'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\nerror'
+        404: b'HTTP/1.1 404 NOT FOUND\r\n\r\nerror'
     }
     return response.get(code, b'')
 
@@ -77,19 +75,26 @@ def run(host='', port=3000):
     """
     启动服务器, socket 进行实例化
     """
-    s = socket.socket()
-    s.bind((host, port))
+    # 使用 with 可以保证程序中断的时候正确关闭 socket 释放占用的端口
+    with socket.socket() as s:
+        s.bind((host, port))
 
-    while True:
-        s.listen(5)
-        connection, address = s.accept()
-        request = connection.recv(1024)
-        request = request.decode('utf-8')
-        path = request.split()[1]
-
-        response = response_for_path(path)
-        connection.sendall(response)
-        connection.close()
+        while True:
+            # 监听 接受 读取请求数据 解码成字符串
+            s.listen(5)
+            connection, address = s.accept()
+            request = connection.recv(1024)
+            request = request.decode('utf-8')
+            print(request)
+            try:
+                # 因为 chrome 会发送空请求导致 split 得到空 list
+                # 所以这里用 try 防止程序崩溃
+                path = request.split()[1]
+                response = response_for_path(path)
+                connection.sendall(response)
+            except Exception as e:
+                print('error', e)
+            connection.close()
 
 
 def main():
@@ -102,3 +107,26 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+"""
+get 请求发送的 request(无 body)
+假设输入的数据为: gw
+
+GET /?user=gw HTTP/1.1
+Host: localhost:3000
+Connection: keep-alive
+"""
+
+"""
+post 请求发送的 request
+假设输入的数据为: 123
+
+POST / HTTP/1.1
+Host: localhost:3000
+Connection: keep-alive
+Content-Length: 7
+Content-Type: application/x-www-form-urlencoded
+
+pwd=123
+"""
