@@ -1,15 +1,17 @@
 from models import Model
 
+
 class User(Model):
-    def __init__(self, data):
-        super().__init__(data)
-        self.username = data.get('username', '')
-        self.password = data.get('password', '')
+    def __init__(self, form):
+        self.username = form.get('username', '')
+        self.password = form.get('password', '')
 
     def validate_login(self):
         users = self.all()
         for user in users:
-            return self.username == user.username and self.password == user.password
+            if self.username == user.username and self.password == user.password:
+                return True
+        return False
 
     def validate_register(self):
         return len(self.username) > 2 and len(self.password) > 2

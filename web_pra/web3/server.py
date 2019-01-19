@@ -4,7 +4,15 @@ from routes.routes import route_dict, error
 
 class Request:
     def __init__(self):
+        """
+        GET /top250 HTTP/1.1
+        Host: movie.douban.com
+        Connection: keep-alive
+
+        body
+        """
         self.method = 'GET'
+        self.headers = {}
         self.path = ''
         self.query = {}
         self.body = ''
@@ -41,6 +49,20 @@ def parsed_path(path):
     query = {k: v[0] for k, v in q.items()}
     return path, query
 
+def parsed_headers(headers):
+    """
+    将 request 的 headers 处理为字典形式
+    {
+        "Host": "www.douban.com",
+    }
+    """
+    hs = {}
+    header_list = headers.split('\r\n')
+    for header in header_list:
+        k, v = header.split(': ')
+        hs[k] = v
+    return hs
+
 
 def response_for_path(path):
     """
@@ -52,6 +74,7 @@ def response_for_path(path):
     request.query = query
 
     routes = {
+        404: error
     }
     routes.update(route_dict)
     response = routes.get(path, error)
@@ -75,6 +98,9 @@ def run(host='', port=5000):
             path = req.split()[1]
             request.method = req.split()[0]
             request.body = req.split('\r\n\r\n', 1)[1]
+            headers = req.split('\r\n\r\n', 1)[0].split('\r\n', 1)[1]
+            request.headers = parsed_headers(headers)
+            print(request.headers)
 
             response = response_for_path(path)
             # 把响应发送给客户端

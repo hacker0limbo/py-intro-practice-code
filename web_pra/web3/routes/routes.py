@@ -9,8 +9,28 @@ def template(name):
     with open(path, 'r') as f:
         return f.read()
 
+def route_static(request):
+    """
+    静态资源处理
+    过程如下:
+    <img src="/static?file=doge.gif">
+    发送 GET 请求到 /static?file=doge.gif
+    GET /static?file=doge.gif
+    path 解析完成, 分离 path 和 query
+        query = {
+            'file', 'doge.gif',
+        }
+    被路由捕获, 调用该函数
+    """
+    filename = request.query.get('file', 'doge.gif')
+    path = 'static/' + filename
+    with open(path, 'rb') as f:
+        header = b'HTTP/1.1 200 OK\r\nContent-Type: image/gif\r\n'
+        img = header + b'\r\n'+ f.read()
+        return img
 
-def route_inex(request):
+
+def route_index(request):
     header = 'HTTP/1.1 210 VERY OK\r\nContent-Type: text/html\r\n'
     body = template('index.html')
     response = header + '\r\n' + body
@@ -42,15 +62,30 @@ def route_register(request):
     if request.method == 'POST':
         form = request.form()
         u = User(form)
-        if u.validate_login():
-            u.save()
-            result = f'注册成功<br> <pre>{u.all()}</pre>'
+        if u.validate_register():
+            print('u', u)
+            User.add(u)
+            # add 已经自动保存了
+            result = f'注册成功<br> <pre>{User.all()}</pre>'
         else:
             result = '用户名或者密码长度必须大于2'
     else:
         result = ''
     body = template('register.html')
     body = body.replace('{{result}}', result)
+    r = header + '\r\n' + body
+    return r.encode(encoding='utf-8')
+
+
+def route_message(request):
+    if request.method == 'POST':
+        form = request.form()
+        msg = Message(form)
+        Message.add(msg)
+    header = 'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n'
+    body = template('msg.html')
+    msgs = '<br>'.join([str(m) for m in Message.all()])
+    body = body.replace('{{messages}}', msgs)
     r = header + '\r\n' + body
     return r.encode(encoding='utf-8')
 
@@ -67,9 +102,11 @@ def error(request, code=404):
     }
     return e.get(code, b'')
 
-def route_index():
-    pass
 
 route_dict = {
     '/': route_index,
+    '/static': route_static,
+    '/login': route_login,
+    '/register': route_register,
+    '/messages': route_message,
 }

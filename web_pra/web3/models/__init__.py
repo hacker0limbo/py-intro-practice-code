@@ -3,8 +3,10 @@ import json
 def save(data, path):
     """
     将一个 list 或者 dict 写入文件中
+    dumps 将一个对象转为 json 格式的字符串
+    default=lambda o: o.__dict__ 可以将传进来的对象属性转为 字典
     """
-    s = json.dumps(data, indent=2, ensure_ascii=False)
+    s = json.dumps(data, indent=2, ensure_ascii=False, default=lambda o: o.__dict__)
     with open(path, 'w+', encoding='utf-8') as f:
         print('文件写入成功')
         f.write(s)
@@ -22,30 +24,39 @@ def load(path):
 
 class Model:
 
-    def __init__(self, data):
-        self.data = data
-
-    def db_path(self):
-        class_name = self.__class__.__name__
+    @classmethod
+    def db_path(cls):
+        class_name = cls.__name__
         path = f'db/{class_name}.txt'
         return path
 
-    def all(self):
+    @classmethod
+    def all(cls):
         """
+        这里使用 classmethod 的原因是对于一个实例是无法获得所以数据, 除非新建一个类保存所有实例
         从数据库里面读取所有数据, 转为对象以后返回
         """
-        path = self.db_path()
+        path = cls.db_path()
         models = load(path)
         # models 是字典格式, 需要转为 对象
-        ms = [self.__class__(m) for m in models]
+        ms = [cls(m) for m in models]
         return ms
 
-    def save(self):
-        models = self.all()
-        models.append(self)
-        # 将一个对象的属性转为字典
-        l = [m.__dict__ for m in models]
-        path = self.db_path()
+    @classmethod
+    def add(cls, model):
+        models = cls.all()
+        models.append(model)
+        cls.save(models)
+
+    @classmethod
+    def save(cls, models):
+        """
+        将一个新的实例保存到数据库中
+        """
+        # 将一个对象的属性转为字典才能写入数据库, save 函数已经做了, 不用再转换
+        l = [m for m in models]
+        path = cls.db_path()
+        # 写入数据库
         save(l, path)
 
     def __repr__(self):
