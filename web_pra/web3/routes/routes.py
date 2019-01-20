@@ -63,7 +63,6 @@ def route_register(request):
         form = request.form()
         u = User(form)
         if u.validate_register():
-            print('u', u)
             User.add(u)
             # add 已经自动保存了
             result = f'注册成功<br> <pre>{User.all()}</pre>'

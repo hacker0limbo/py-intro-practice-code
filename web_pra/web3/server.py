@@ -2,6 +2,7 @@ import socket
 from urllib.parse import urlparse, unquote, parse_qs
 from routes.routes import route_dict, error
 
+
 class Request:
     def __init__(self):
         """
@@ -37,24 +38,25 @@ class Request:
 
 request = Request()
 
-
-def parsed_path(path):
+def parsed_path(path_with_query):
     """
-    path 是路径, 包括 path 和 query, 如/name?a=1&b=2
+    path_with_query 是路径, 包括 path 和 query, 如/name?a=1&b=2
     返回为: ('/name', {'a': '1', 'b': '2'})
     """
-    u = urlparse(path)
+    u = urlparse(path_with_query)
     path = u.path
     q = parse_qs(u.query)
     query = {k: v[0] for k, v in q.items()}
     return path, query
 
+
 def parsed_headers(headers):
     """
-    将 request 的 headers 处理为字典形式
+    "Host: www.douban.com" =>
     {
         "Host": "www.douban.com",
     }
+    返回为一组字典
     """
     hs = {}
     header_list = headers.split('\r\n')
@@ -62,6 +64,24 @@ def parsed_headers(headers):
         k, v = header.split(': ')
         hs[k] = v
     return hs
+
+
+def parsed_request(request):
+    """
+    request 如下
+    GET /top250 HTTP/1.1 (header_line)
+    Host: movie.douban.com (headers)
+
+    a=1&b=2(body)
+    """
+    header_line, req = request.split('\r\n', 1)
+    headers, body = req.split('\r\n\r\n', 1)
+    return header_line, headers, body
+
+
+def parsed_header_line(header_line):
+    method, path, protocol = header_line.split()
+    return method, path, protocol
 
 
 def response_for_path(path):
@@ -95,10 +115,11 @@ def run(host='', port=5000):
             # 防止 Chrome 发送空请求
             if len(req.split()) < 2:
                 continue
-            path = req.split()[1]
-            request.method = req.split()[0]
-            request.body = req.split('\r\n\r\n', 1)[1]
-            headers = req.split('\r\n\r\n', 1)[0].split('\r\n', 1)[1]
+            header_line, headers, body = parsed_request(req)
+            method, path, protocol = parsed_header_line(header_line)
+
+            request.method = method
+            request.body = body
             request.headers = parsed_headers(headers)
             print(request.headers)
 
