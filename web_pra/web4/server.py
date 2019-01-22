@@ -27,7 +27,7 @@ class Request:
         kvs = cookies.split('; ')
         for kv in kvs:
             if '=' in kv:
-                k, v  = kv.split('=')
+                k, v = kv.split('=', 1)
                 self.cookies[k] = v
 
     def form(self):
@@ -46,7 +46,6 @@ class Request:
             k, v = arg.split('=')
             f[unquote(k)] = v
         return f
-
 
 
 request = Request()
@@ -114,7 +113,7 @@ def response_for_path(path):
     return response(request)
 
 
-def run(host='', port=5000):
+def run(host='', port=3000):
     with socket.socket() as s:
         s.bind((host, port))
 

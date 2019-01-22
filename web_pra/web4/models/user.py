@@ -6,6 +6,7 @@ class User(Model):
         super().__init__()
         self.username = form.get('username', '')
         self.password = form.get('password', '')
+        self.note = form.get('note', '')
 
     def validate_login(self):
         # users = self.all()
