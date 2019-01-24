@@ -7,18 +7,7 @@ def chunk(array: list, size: int=1) -> list:
     :param size: 每个数组区块的长度
     :return: 一个包含拆分区块的新数组
     """
-    result = []
-    l = len(array)
-    if size >= l:
-        result.append(array[:])
-    else:
-        c = l // size
-        v = l - l % size
-        for i in range(c):
-            result.append(array[i*size:i*size+size])
-        if len(array[v:]) != 0:
-            result.append(array[v:])
-    return result
+    return [array[i:i+size] for i in range(0, len(array), size)]
 
 
 def compact(array: list) -> list:
@@ -48,3 +37,74 @@ def concat(array: list, *args) -> list:
     return result
 
 
+def difference(array: list, *args) -> list:
+    """
+    创建一个新数组，这个数组中的值，为第一个数组（array 参数）排除了给定数组中的值
+    :param array:
+    :param args:
+    :return:
+    """
+    t = []
+    result = []
+    for v in args:
+        t.extend(v)
+    for a in array:
+        if a in t:
+            continue
+        result.append(a)
+    return result
+
+
+def identity(*args):
+    """
+    返回首个提供的参数
+    :param args:
+    :return:
+    """
+    return args[0]
+
+
+def difference_by(array, *args):
+    """
+    接受一个迭代器 iteratee 调用 array 和 values 中的每个元素以产生比较的标准
+    结果值从第一个数组中选择
+    :param array:
+    :param args:
+    :return:
+    """
+    iteratee = args[-1]
+    a = [iteratee(x) for x in array]
+    vs = [[iteratee(v) for v in arg] for arg in args[:-1]]
+    t = []
+    for v in vs:
+        t.extend(v)
+    result = []
+    for i, v in enumerate(a):
+        if v in t:
+            continue
+        result.append(array[i])
+    return result
+
+
+def difference_with(array, *args):
+    pass
+
+
+def drop(array, n=1):
+    """
+    创建一个切片数组，去除 array 前面的 n 个元素
+    :param array:
+    :param n:
+    :return:
+    """
+    return array[n:]
+
+
+def drop_right(array, n=1):
+    """
+    创建一个切片数组，去除array尾部的n个元素
+    :param array:
+    :param n:
+    :return:
+    """
+    return array[:-n]
