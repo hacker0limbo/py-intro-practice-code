@@ -52,17 +52,6 @@ class Model:
         return mls
 
     @classmethod
-    def add(cls, model):
-        """
-        增加一个 model
-        """
-        models = cls.all()
-        # 新加的 id 需要重设 id
-        model.id = len(models) + 1
-        models.append(model)
-        cls.save(models)
-
-    @classmethod
     def save(cls, models):
         """
         将一个新的实例保存到数据库中

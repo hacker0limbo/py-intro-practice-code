@@ -20,5 +20,15 @@ class User(Model):
     def validate_register(self):
         return len(self.username) > 2 and len(self.password) > 2 and (self.find_by(username=self.username) is None)
 
+    @classmethod
+    def add(cls, user):
+        """
+        增加一个 user
+        """
+        users = cls.all()
+        # 新加的 id 需要重设 id
+        user.id = len(users) + 1
+        users.append(user)
+        cls.save(users)
 
 

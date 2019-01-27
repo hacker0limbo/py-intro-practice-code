@@ -55,6 +55,7 @@ class Request:
 
 request = Request()
 
+
 def parsed_path(path_with_query):
     """
     path_with_query 是路径, 包括 path 和 query, 如/name?a=1&b=2
