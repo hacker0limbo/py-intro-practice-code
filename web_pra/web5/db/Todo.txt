@@ -2,31 +2,26 @@
   {
     "id": 1,
     "title": "上课",
-    "user_id": 1,
-    "task_id": 1
+    "user_id": 1
   },
   {
     "id": 2,
     "title": "睡觉",
-    "user_id": 2,
-    "task_id": 1
+    "user_id": 2
   },
   {
     "id": 3,
     "title": "打怪兽",
-    "user_id": 2,
-    "task_id": 2
+    "user_id": 2
   },
   {
     "id": 4,
-    "title": "吃米粉",
-    "user_id": 1,
-    "task_id": 2
+    "title": "玩",
+    "user_id": 3
   },
   {
-    "id": 5,
-    "title": "玩",
-    "user_id": 3,
-    "task_id": 1
+    "id": 6,
+    "title": "掏粪",
+    "user_id": 1
   }
 ]

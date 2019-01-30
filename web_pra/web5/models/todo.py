@@ -8,7 +8,6 @@ class Todo(Model):
         self.id = form.get('id', None)
         self.title = form.get('title', '')
         self.user_id = form.get('user_id', -1)
-        self.task_id = form.get('task_id', -1)
 
     @classmethod
     def update(cls, id, title):
@@ -21,20 +20,17 @@ class Todo(Model):
     @classmethod
     def remove(cls, id):
         """
-        删除一个 todo 的时候 其他的 todo 的 id, task_id 也需要改变
+        删除一个 todo 的时候 其他的 todo 的 id
         """
         todos = cls.all()
         for t in todos:
             if t.id == id:
                 todos.remove(t)
                 break
-        for i, t in enumerate(todos):
-            # 重设 id
-            t.id = i + 1
         cls.save(todos)
 
     @classmethod
-    def add(cls, todo, user_id, task_id):
+    def add(cls, todo, user_id):
         """
         增加一个 todo
         """
@@ -42,7 +38,6 @@ class Todo(Model):
         # 新加的 id 需要重设 id
         todo.id = len(todos) + 1
         todo.user_id = user_id
-        todo.task_id = task_id
         todos.append(todo)
         cls.save(todos)
 

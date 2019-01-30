@@ -31,10 +31,11 @@ def todo_index(request):
     todo_list = Todo.find_all(user_id=u.id)
     # 生成 todo list 的 HTML 字段
     todos = []
-    for t in todo_list:
+    for i, t in enumerate(todo_list):
+        # 第几个 task 直接用 index 来定位, 不需要新建一个 task_id 来存储
         edit_link = f'<a href="/todo/edit?id={t.id}">编辑</a>'
         delete_link = f'<a href="/todo/delete?id={t.id}">删除</a>'
-        s = f'<h3>{t.task_id} : {t.title} {edit_link} {delete_link}</h3>'
+        s = f'<h3>{i+1} : {t.title} {edit_link} {delete_link}</h3>'
         todos.append(s)
     todo_html = ''.join(todos)
     body = template('todo_index.html')
@@ -59,8 +60,7 @@ def todo_add(request):
         form = request.form()
         t = Todo(form)
         todos = Todo.find_all(user_id=u.id)
-        task_id = len(todos) + 1
-        Todo.add(t, u.id, task_id)
+        Todo.add(t, u.id)
     # 客户端发送了数据服务器处理完毕以后, 数据被写入数据库
     # 重定向到 /todo 页面, 相当于刷新页面, 重新发送 请求到 todo 页面, 然后该页面的路由处理
     # 先 post 到了 /todo/add, 然后 302 重定向到 /todo
