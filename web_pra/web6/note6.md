@@ -10,3 +10,4 @@ jinja 可以使用`.`来访问一个字典的 value 或者一个对象的属性
 ```jinja2
 name: {% u.get_name() if u.age > 18 and u %}
 ```
+
