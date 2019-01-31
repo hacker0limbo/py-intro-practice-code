@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>weibo new</title>
+</head>
+<body>
+    <form action="/weibo/add" method="post">
+        <span>用户 id: </span>
+        <input name="user_id" value="{{ user.id }}" readonly>
+        <br>
+        <textarea name="content"></textarea>
+        <br>
+        <button type="submit">发表新微博</button>
+    </form>
+</body>
+</html>

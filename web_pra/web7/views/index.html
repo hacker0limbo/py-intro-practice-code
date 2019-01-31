@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>吃瓜主页</title>
+</head>
+<body>
+    <h1>主页</h1>
+    <h1>Hello {{ user.username }}</h1>
+    <img src="/static?file=doge.gif"/>
+    <img src="/static?file=doge1.jpg"/>
+    <img src="/static?file=doge2.gif"/>
+    <br>
+    <a href="/login">Login</a>
+    <a href="/register">Register</a>
+    {% if user is not none %}
+        <a href="/weibo/index?user_id={{ user.id }}">查看微博</a>
+    {% endif %}
+</body>
+</html>
