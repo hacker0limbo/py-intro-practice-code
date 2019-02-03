@@ -1,21 +1,16 @@
-from models import Model
-from utils import hashed_password, salted_password
+from models import Model, open_db, close_db
+from utils import salted_password
 
 
 class User(Model):
     def __init__(self, form):
-        super().__init__()
+        # 初始化的时候不能有 id, 由于在 数据库里面 id 是自动增加的
+        self.id = form.get('id', None)
         self.username = form.get('username', '')
         self.password = form.get('password', '')
         self.note = form.get('note', '')
 
     def validate_login(self):
-        # users = self.all()
-        # for user in users:
-        #     if self.username == user.username and self.password == user.password:
-        #         return True
-        # return False
-
         # 这里需要将数据库里面的密文 和 摘要算法加密以后的密码进行比较
         u = self.find_by(username=self.username)
         return u is not None and u.password == salted_password(self.password)
@@ -27,18 +22,9 @@ class User(Model):
         self.password = salted_password(self.password)
         if User.find_by(username=self.username) is None:
             # 没找到数据, 说明可以注册
-            User.add(self)
+            conn, cursor = open_db()
+            User.add(cursor, self)
+            close_db(conn, cursor)
             return self
         else:
             return None
-
-    @classmethod
-    def add(cls, user):
-        """
-        增加一个 user
-        """
-        users = cls.all()
-        # 新加的 id 需要重设 id
-        user.id = len(users) + 1
-        users.append(user)
-        cls.save(users)

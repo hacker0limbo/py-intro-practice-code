@@ -3,40 +3,24 @@ from models.user import User
 
 
 class Weibo(Model):
-    def __init__(self, form, user_id=-1):
+    def __init__(self, form):
         super().__init__()
         self.id = form.get('id', None)
         self.content = form.get('content', '')
         # 和别的数据关联的方式, 用 user_id 表明拥有它的 user 实例
-        self.user_id = form.get('user_id', user_id)
-        self.deleted = form.get('deleted', False)
+        self.user_id = form.get('user_id', -1)
 
     @classmethod
-    def add(cls, weibo, user_id):
-        """
-        增加一个新的 weibo, 同时加上当前 user_id
-        """
-        weibos = cls.all()
-        weibo.id = len(weibos) + 1
-        weibo.user_id = int(user_id)
-        weibos.append(weibo)
-        cls.save(weibos)
-
-    @classmethod
-    def delete(cls, id):
-        weibos = cls.all()
-        for w in weibos:
-            if w.id == id:
-                w.deleted = True
-        cls.save(weibos)
-
-    @classmethod
-    def update(cls, id, content):
-        weibos = cls.all()
-        for w in weibos:
-            if w.id == id:
-                w.content = content
-        cls.save(weibos)
+    def update(cls, cursor, id, content):
+        sql_update = f'''
+        UPDATE
+            {cls.__name__}
+        SET
+            content=?
+        WHERE
+            id=?
+        '''
+        cursor.execute(sql_update, (content, id))
 
     def comments(self):
         """
@@ -52,7 +36,7 @@ class Comment(Model):
         self.content = form.get('content', '')
         # 和别的数据关联的方式, 用 user_id 表明拥有它的 user 实例
         self.user_id = form.get('user_id', user_id)
-        self.weibo_id = int(form.get('weibo_id', -1))
+        self.weibo_id = form.get('weibo_id', -1)
 
     def user(self):
         """
@@ -61,9 +45,3 @@ class Comment(Model):
         u = User.find_by(id=self.user_id)
         return u
 
-    @classmethod
-    def add(cls, comment):
-        comments = cls.all()
-        comment.id = len(comments) + 1
-        comments.append(comment)
-        cls.save(comments)

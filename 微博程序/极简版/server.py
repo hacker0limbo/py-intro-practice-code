@@ -120,8 +120,8 @@ def response_for_path(path):
         404: error
     }
     routes.update(route_dict)
-    routes.update(todo_route)
-    routes.update(weibo_route)
+    # routes.update(todo_route)
+    # routes.update(weibo_route)
     # 根据 request 的 path 来匹配 routes 里面的 path, 调用 routes 里面的函数
     response = routes.get(path, error)
     return response(request)

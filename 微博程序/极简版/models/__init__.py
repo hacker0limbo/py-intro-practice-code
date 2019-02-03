@@ -1,4 +1,6 @@
 import json
+import sqlite3
+from pathlib import Path
 
 
 def save(data, path):
@@ -13,20 +15,53 @@ def save(data, path):
         f.write(s)
 
 
-def load(path):
+def open_db():
+    root = Path(__file__).parent.parent
+    db_path = str(root / 'db/data.sqlite')
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    return conn, cursor
+
+
+def close_db(conn, cursor):
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+
+def dict_factory(cursor, row):
+    d = {}
+    for idx, col in enumerate(cursor.description):
+        d[col[0]] = row[idx]
+    return d
+
+
+def load(table):
     """
-    从一个文件中载入数据并转化为 dict 或者 list
+    从数据里面读取数据, 并返回一个列表, 包含字典, 每个字典代表一组数据, 如下:
+    [
+      {
+        'id': 1,
+        'username': xxx
+      },
+    ]
     """
-    with open(path, 'r', encoding='utf-8') as f:
-        s = f.read()
-        print('文件读取成功')
-        return json.loads(s)
+    conn, cursor = open_db()
+    conn.row_factory = dict_factory
+    cursor = conn.cursor()
+    sql = f"""
+    SELECT
+        *
+    FROM
+        {table}
+    """
+    cursor.execute(sql)
+    result = cursor.fetchall()
+    close_db(conn, cursor)
+    return result
 
 
 class Model:
-
-    def __init__(self):
-        self.id = None
 
     @classmethod
     def db_path(cls):
@@ -37,19 +72,13 @@ class Model:
     @classmethod
     def all(cls):
         """
-        这里使用 classmethod 的原因是对于一个实例是无法获得所以数据, 除非新建一个类保存所有实例
-        从数据库里面读取所有数据, 转为对象以后返回
+        从数据库里面读取所有数据并生成对象
         """
-        path = cls.db_path()
-        models = load(path)
+        table = cls.__name__
+        models = load(table)
         # models 是字典格式, 需要转为 对象
         ms = [cls(m) for m in models]
-        mls = []
-        # id 初始为 None, 需要改变
-        for i, v in enumerate(ms):
-            v.id = i + 1
-            mls.append(v)
-        return mls
+        return ms
 
     @classmethod
     def save(cls, models):
@@ -66,7 +95,7 @@ class Model:
     def find_by(cls, **kwargs):
         """
         不定参数为 username='gua'
-        返回一个 username 为 'gua' 的 User 实例
+        返回一个 username 为 'gua' 的 Model 实例
         """
         for k, v in kwargs.items():
             ms = cls.all()
@@ -89,6 +118,33 @@ class Model:
                 if getattr(m, k, None) == v:
                     models.append(m)
         return models
+
+    @classmethod
+    def add(cls, cursor, m):
+        """
+        往数据库里面添加一个新的数据
+        """
+        m_attr = m.__dict__
+        attr = {k: v for k, v in m_attr.items() if k != 'id'}
+        columns = ', '.join(attr.keys())
+        placeholders = ', '.join('?' * len(attr))
+        sql_insert = f"""
+        INSERT INTO
+            {cls.__name__}({columns})
+        VALUES
+            ({placeholders});
+        """
+        cursor.execute(sql_insert, tuple(attr.values()))
+
+    @classmethod
+    def delete(cls, cursor, id):
+        sql_delete = f'''
+        DELETE FROM
+            {cls.__name__}
+        WHERE
+            id=?
+        '''
+        cursor.execute(sql_delete, (id,))
 
     def __repr__(self):
         """

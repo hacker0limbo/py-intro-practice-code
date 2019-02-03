@@ -1,3 +1,4 @@
+from models import open_db, close_db
 from models.user import User
 from models.weibo import Weibo, Comment
 
@@ -37,10 +38,13 @@ def add(request):
     """
     新微博发送的数据在这里处理
     """
+    conn, cursor = open_db()
     form = request.form()
     uid = form.get('user_id', -1)
     weibo = Weibo(form)
-    Weibo.add(weibo, uid)
+    weibo.user_id = int(uid)
+    Weibo.add(cursor, weibo)
+    close_db(conn, cursor)
     return redirect(f'/weibo/index?user_id={str(uid)}')
 
 
