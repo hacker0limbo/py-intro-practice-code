@@ -74,6 +74,25 @@ print(cur.fetchone()) # {'a': 1}
 
 ```
 
+## 几个概念
+
+使用`with`语句自动提交`commit`修改, 实例如下:
+```python
+conn = sqlite3.connect(db_filename)
+
+with conn:
+    cur = conn.cursor()
+    cur.execute( ... )
+```
+
+- connection object 连接对象可以被用来作为 context managers, 能够自动提交(commit)和回滚(rollback)事务, 报错就rollback, 否则commit
+  对于 DELETE, UPDATE, INSERT 比较有效
+- 在 context manager 里面连接不会自动关闭, 除非使用`conn.commit()`手动关闭
+- `with`语句不会创造一个新的作用域, 因此 with 里面定义的变量, with 外面还是可以使用
+- `conn`直接连接一次就行, 也不用关闭, 如果有多个 module 要用到这个连接就需要使用 ORM 了.
 
 ## Reference
 - https://stackoverflow.com/questions/6318126/why-do-you-need-to-create-a-cursor-when-querying-a-sqlite-database
+- https://stackoverflow.com/questions/19522505/using-sqlite3-in-python-with-with-keyword
+- https://stackoverflow.com/questions/9561832/what-if-i-dont-close-the-database-connection-in-python-sqlite
+- https://stackoverflow.com/questions/4610791/can-i-put-my-sqlite-connection-and-cursor-in-a-function

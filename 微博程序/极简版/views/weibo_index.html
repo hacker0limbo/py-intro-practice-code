@@ -12,7 +12,7 @@
 <body>
     <a href="/weibo/new">写新微博</a>
 
-    {% for w in weibos if not w.deleted %}
+    {% for w in weibos %}
     <p>
         {{ w.content }} from {{ user.username }}
         <a href="/weibo/delete?id={{ w.id }}">删除</a>

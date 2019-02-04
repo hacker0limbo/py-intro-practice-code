@@ -121,7 +121,7 @@ def response_for_path(path):
     }
     routes.update(route_dict)
     # routes.update(todo_route)
-    # routes.update(weibo_route)
+    routes.update(weibo_route)
     # 根据 request 的 path 来匹配 routes 里面的 path, 调用 routes 里面的函数
     response = routes.get(path, error)
     return response(request)
@@ -160,6 +160,6 @@ if __name__ == '__main__':
     # 生成配置并且运行程序
     config = dict(
         host='',
-        port=2000,
+        port=3000,
     )
     run(**config)

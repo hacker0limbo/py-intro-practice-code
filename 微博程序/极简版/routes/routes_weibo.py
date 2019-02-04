@@ -23,7 +23,7 @@ def index(request):
 
 def new(request):
     """
-    添加新微博的页面, 路径为 /weibo/new?user_id=1
+    添加新微博的页面, 路径为 /weibo/new
     """
     user_id = int(current_user_id(request))
     user = User.find_by(id=user_id)
@@ -54,7 +54,9 @@ def delete(request):
     """
     uid = current_user_id(request)
     weibo_id = int(request.query.get('id', -1))
-    Weibo.delete(weibo_id)
+    conn, cursor = open_db()
+    Weibo.delete(cursor, weibo_id)
+    close_db(conn, cursor)
     return redirect(f'/weibo/index?user_id={str(uid)}')
 
 
@@ -79,11 +81,16 @@ def update(request):
     form = request.form()
     weibo_id = int(form.get('id', -1))
     weibo_content = form.get('content', '')
-    Weibo.update(weibo_id, weibo_content)
+    conn, cursor = open_db()
+    Weibo.update(cursor, weibo_id, weibo_content)
+    close_db(conn, cursor)
     return redirect(f'/weibo/index?user_id={str(uid)}')
 
 
 def comment_add(request):
+    """
+    增加 一个评论
+    """
     uid = current_user_id(request)
     form = request.form()
     weibo_id = form.get('weibo_id', -1)
@@ -93,7 +100,10 @@ def comment_add(request):
     }
     form.update(new_form)
     comment = Comment(form)
-    Comment.add(comment)
+
+    conn, cursor = open_db()
+    Comment.add(cursor, comment)
+    close_db(conn, cursor)
     return redirect(f'/weibo/index?user_id={str(uid)}')
 
 

@@ -10,18 +10,6 @@ class Weibo(Model):
         # 和别的数据关联的方式, 用 user_id 表明拥有它的 user 实例
         self.user_id = form.get('user_id', -1)
 
-    @classmethod
-    def update(cls, cursor, id, content):
-        sql_update = f'''
-        UPDATE
-            {cls.__name__}
-        SET
-            content=?
-        WHERE
-            id=?
-        '''
-        cursor.execute(sql_update, (content, id))
-
     def comments(self):
         """
         返回该篇博文里面的所有评论

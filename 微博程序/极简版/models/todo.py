@@ -10,35 +10,18 @@ class Todo(Model):
         self.user_id = form.get('user_id', -1)
 
     @classmethod
-    def update(cls, id, title):
-        todos = cls.all()
-        for t in todos:
-            if t.id == id:
-                t.title = title
-        cls.save(todos)
+    def update(cls, cursor, id, title):
+        sql_update = f'''
+        UPDATE
+            {cls.__name__}
+        SET
+            title=?
+        WHERE
+            id=?
+        '''
+        cursor.execute(sql_update, (title, id))
 
-    @classmethod
-    def remove(cls, id):
-        """
-        删除一个 todo 的时候 其他的 todo 的 id
-        """
-        todos = cls.all()
-        for t in todos:
-            if t.id == id:
-                todos.remove(t)
-                break
-        cls.save(todos)
 
-    @classmethod
-    def add(cls, todo, user_id):
-        """
-        增加一个 todo
-        """
-        todos = cls.all()
-        # 新加的 id 需要重设 id
-        todo.id = len(todos) + 1
-        todo.user_id = user_id
-        todos.append(todo)
-        cls.save(todos)
+
 
 

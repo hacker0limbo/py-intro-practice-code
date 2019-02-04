@@ -1,18 +1,5 @@
-import json
 import sqlite3
 from pathlib import Path
-
-
-def save(data, path):
-    """
-    将一个 list 或者 dict 写入文件中
-    dumps 将一个对象转为 json 格式的字符串
-    default=lambda o: o.__dict__ 可以将传进来的对象属性转为 字典
-    """
-    s = json.dumps(data, indent=2, ensure_ascii=False, default=lambda o: o.__dict__)
-    with open(path, 'w+', encoding='utf-8') as f:
-        print('文件写入成功')
-        f.write(s)
 
 
 def open_db():
@@ -81,17 +68,6 @@ class Model:
         return ms
 
     @classmethod
-    def save(cls, models):
-        """
-        将一个新的实例保存到数据库中
-        """
-        # 将一个对象的属性转为字典才能写入数据库, save 函数已经做了, 不用再转换
-        l = [m for m in models]
-        path = cls.db_path()
-        # 写入数据库
-        save(l, path)
-
-    @classmethod
     def find_by(cls, **kwargs):
         """
         不定参数为 username='gua'
@@ -145,6 +121,18 @@ class Model:
             id=?
         '''
         cursor.execute(sql_delete, (id,))
+
+    @classmethod
+    def update(cls, cursor, id, content):
+        sql_update = f'''
+        UPDATE
+            {cls.__name__}
+        SET
+            content=?
+        WHERE
+            id=?
+        '''
+        cursor.execute(sql_update, (content, id))
 
     def __repr__(self):
         """
