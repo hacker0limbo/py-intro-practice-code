@@ -1,8 +1,0 @@
-[
-  {
-    "id": 1,
-    "username": "gua",
-    "password": "41c1357e5816bf7941a490d8fb169220",
-    "note": "aaaaa"
-  }
-]

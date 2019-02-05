@@ -1,20 +1,7 @@
 from models.todo import Todo
 from routes import template, response_with_headers, redirect, error
-from routes.routes import current_user
+from routes.routes import current_user, login_required
 from models.user import User
-
-
-def login_required(route_function):
-    """
-    在 返回 route_function(也就是 todo_edit, todo_login) 等这些路由函数前, 先判断是否登录
-    """
-    def f(request):
-        username = current_user(request)
-        u = User.find_by(username=username)
-        if u is None:
-            return redirect('/login')
-        return route_function(request)
-    return f
 
 
 def todo_index(request):

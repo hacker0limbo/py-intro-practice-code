@@ -1,6 +1,6 @@
 from models.message import Message
 from models.user import User
-from session import session
+from routes.session import session
 from utils import random_str
 from routes import template, response_with_headers, route_static, redirect, j_template
 

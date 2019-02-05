@@ -1,101 +1,115 @@
 import unittest
 import sqlite3
 from pathlib import Path
-from models import load
 
 
-def select(cursor):
-    sql = '''
-    SELECT
-        *
-    FROM
-        User
-    WHERE
-        id=1
-    '''
-    cursor.execute(sql)
-    return cursor.fetchall()
+""""
+三种方法减少连接数据库的代码
+1, 使用 with 自动 commit/rollback
+2, 使用装饰器在执行 query 前后自动打开关闭数据库
+3, 自己写一个上下文管理器自动管理资源
+"""
+
+root = Path(__file__).parent.parent
+db_path = str(root / 'db/data.sqlite')
 
 
-def find_by(cursor, **kwargs):
-    for k, v in kwargs.items():
-        sql = f'''
+def dbconn(query):
+    def wrapper(cls, *args, **kwargs):
+        conn = sqlite3.connect(db_path)
+        result = query(cls, conn, *args, **kwargs)
+        conn.commit()
+        conn.close()
+        return result
+    return wrapper
+
+
+def db_conn(query):
+    def wrapper(cls, *args, **kwargs):
+        conn = sqlite3.connect(db_path)
+        with conn:
+            # with 不自动关闭, 需要手动关闭, with 只帮助处理 commit 或 rollback
+            result = query(cls, conn, *args, **kwargs)
+        conn.close()
+        return result
+    return wrapper
+
+
+class dbopen:
+    """
+    上下文管理器, 自动释放资源
+    """
+    def __init__(self, path=db_path):
+        self.path = path
+        self.conn = None
+        self.cursor = None
+
+    def __enter__(self):
+        self.conn = sqlite3.connect(self.path)
+        self.cursor = self.conn.cursor()
+        return self.cursor
+
+    def __exit__(self, exc_class, exc, traceback):
+        self.conn.commit()
+        self.conn.close()
+
+
+
+class Student:
+
+    @classmethod
+    @dbconn
+    def select_all(cls, conn):
+        cursor = conn.cursor()
+        sql = """
         SELECT
             *
         FROM
-            User
-        WHERE
-            {k}=?
-        LIMIT
-            1
-        '''
-        cursor.execute(sql, (v,))
-        result = cursor.fetchall()
-        if len(result) == 0:
-            return None
-        return result
+            Student
+        """
+        cursor.execute(sql)
+        return cursor.fetchall()
 
-
-def find_all(cursor, **kwargs):
-    for k, v in kwargs.items():
-        sql = f'''
+    @classmethod
+    @db_conn
+    def select_first(cls, conn):
+        cursor = conn.cursor()
+        sql = """
         SELECT
             *
         FROM
-            User
+            Student
         WHERE
-            {k}=?
-        '''
-        cursor.execute(sql, (v,))
-        result = cursor.fetchall()
-        if len(result) == 0:
-            return None
-        return result
+            id=1
+        """
+        cursor.execute(sql)
+        return cursor.fetchall()
+
+    @classmethod
+    def select_second(cls):
+        sql = """
+        SELECT
+            *
+        FROM
+            Student
+        WHERE
+            id=2
+        """
+        with dbopen() as cursor:
+            cursor.execute(sql)
+            return cursor.fetchall()
 
 
 class TestDataBase(unittest.TestCase):
 
-    def setUp(self):
-        root = Path(__file__).parent.parent
-        db_path = str(root / 'db/data.sqlite')
-        self.conn = sqlite3.connect(db_path)
-        self.cursor = self.conn.cursor()
-        print("打开了数据库")
+    def test_select_all(self):
+        self.assertListEqual(Student.select_all(), [(1, 'gua'), (2, 'gw'), (3, 'bo')])
 
-    def tearDown(self):
-        # 写入数据库
-        # self.conn.commit()
-        self.cursor.close()
-        self.conn.close()
-        print('关闭了数据库')
+    def test_select_one(self):
+        self.assertListEqual(Student.select_first(), [(1, 'gua')])
 
-    def test_select(self):
-        self.assertListEqual(select(self.cursor), [(1, 'gua', '41c1357e5816bf7941a490d8fb169220', '吃瓜')])
-
-    def test_find_by(self):
-        self.assertListEqual(find_by(self.cursor, username='gua'),
-                             [(1, 'gua', '41c1357e5816bf7941a490d8fb169220', '吃瓜')])
-        self.assertListEqual(find_by(self.cursor, password='41c1357e5816bf7941a490d8fb169220'),
-                             [(1, 'gua', '41c1357e5816bf7941a490d8fb169220', '吃瓜')])
-        self.assertIsNone(find_by(self.cursor, username='fuck'))
-
-    def test_find_all(self):
-        self.assertListEqual(find_all(self.cursor, username='gua'),
-                             [(1, 'gua', '41c1357e5816bf7941a490d8fb169220', '吃瓜')])
-        self.assertListEqual(find_all(self.cursor, password='41c1357e5816bf7941a490d8fb169220'),
-                             [(1, 'gua', '41c1357e5816bf7941a490d8fb169220', '吃瓜'),
-                              (2, 'limboer', '41c1357e5816bf7941a490d8fb169220', '吃饭')])
-        self.assertIsNone(find_all(self.cursor, username='fuck'))
-
-    def test_load(self):
-        self.assertListEqual(load('User'), [{'id': 1,
-                                         'note': '吃瓜',
-                                         'password': '41c1357e5816bf7941a490d8fb169220',
-                                         'username': 'gua'},
-                                        {'id': 2,
-                                         'note': '吃饭',
-                                         'password': '41c1357e5816bf7941a490d8fb169220',
-                                         'username': 'limboer'}])
+    def test_select_two(self):
+        self.assertListEqual(Student.select_second(), [(2, 'gw')])
 
 
 if __name__ == '__main__':

@@ -21,6 +21,7 @@ def index(request):
     return http_response(body)
 
 
+@login_required
 def new(request):
     """
     添加新微博的页面, 路径为 /weibo/new
@@ -34,6 +35,7 @@ def new(request):
     return http_response(body)
 
 
+@login_required
 def add(request):
     """
     新微博发送的数据在这里处理
@@ -48,6 +50,7 @@ def add(request):
     return redirect(f'/weibo/index?user_id={str(uid)}')
 
 
+@login_required
 def delete(request):
     """
     删除一个 weibo
@@ -60,6 +63,7 @@ def delete(request):
     return redirect(f'/weibo/index?user_id={str(uid)}')
 
 
+@login_required
 def edit(request):
     """
     更新 weibo 的主页, 前往路径为 /weibo/edit?user_id=1
@@ -73,6 +77,7 @@ def edit(request):
     return http_response(body)
 
 
+@login_required
 def update(request):
     """
     更新微博的数据在这里处理
@@ -86,7 +91,7 @@ def update(request):
     close_db(conn, cursor)
     return redirect(f'/weibo/index?user_id={str(uid)}')
 
-
+@login_required
 def comment_add(request):
     """
     增加 一个评论
@@ -109,10 +114,10 @@ def comment_add(request):
 
 route_dict = {
     '/weibo/index': index,
-    '/weibo/new': login_required(new),
-    '/weibo/edit': login_required(edit),
-    '/weibo/add': login_required(add),
-    '/weibo/update': login_required(update),
-    '/weibo/delete': login_required(delete),
-    '/comment/add': login_required(comment_add),
+    '/weibo/new': new,
+    '/weibo/edit': edit,
+    '/weibo/add': add,
+    '/weibo/update': update,
+    '/weibo/delete': delete,
+    '/comment/add': comment_add,
 }

@@ -96,3 +96,4 @@ with conn:
 - https://stackoverflow.com/questions/19522505/using-sqlite3-in-python-with-with-keyword
 - https://stackoverflow.com/questions/9561832/what-if-i-dont-close-the-database-connection-in-python-sqlite
 - https://stackoverflow.com/questions/4610791/can-i-put-my-sqlite-connection-and-cursor-in-a-function
+- https://stackoverflow.com/questions/2330344/in-python-with-sqlite-is-it-necessary-to-close-a-cursor

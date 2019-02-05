@@ -1,6 +1,6 @@
 from jinja2 import Environment, FileSystemLoader
 from pathlib import Path
-from session import session
+from routes.session import session
 
 PATH = f'{Path(__file__).parent.parent}/views'
 LOADER = FileSystemLoader(PATH)
@@ -96,3 +96,4 @@ def http_response(body, headers=None):
         header = response_with_headers(headers)
     response = header + '\r\n' + body
     return response.encode('utf-8')
+
