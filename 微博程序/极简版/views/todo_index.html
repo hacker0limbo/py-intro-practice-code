@@ -17,6 +17,7 @@
                 {{ loop.index }}. {{ todo.title }}
                 <a href="/todo/edit?id={{ todo.id }}">编辑</a>
                 <a href="/todo/delete?id={{ todo.id }}">删除</a>
+                <br>
             {% endfor %}
         </h3>
     </div>

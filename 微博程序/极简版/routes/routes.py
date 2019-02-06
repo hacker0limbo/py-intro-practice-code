@@ -1,7 +1,7 @@
 from models.user import User
 from routes.session import session
 from utils import random_str
-from routes import response_with_headers, route_static, redirect, j_template
+from routes import route_static, redirect, j_template, http_response
 
 
 def current_user(request):
@@ -44,14 +44,12 @@ def login_required(route_function):
 
 
 def route_index(request):
-    header = 'HTTP/1.1 210 VERY OK\r\nContent-Type: text/html\r\n'
     user_id = current_user_id(request)
     user = User.find_by(id=user_id)
     users = User.all()
     body = j_template('index.html', user=user, users=users)
 
-    response = header + '\r\n' + body
-    return response.encode(encoding='utf-8')
+    return http_response(body)
 
 
 def route_login(request):
@@ -84,13 +82,10 @@ def route_login(request):
         result = ''
     body = j_template('login.html', username=username, result=result)
     # 拼接 header
-    header = response_with_headers(headers)
-    response = header + '\r\n' + body
-    return response.encode(encoding='utf-8')
+    return http_response(body, headers=headers)
 
 
 def route_register(request):
-    header = 'HTTP/1.1 210 VERY OK\r\nContent-Type: text/html\r\n'
     if request.method == 'POST':
         form = request.form()
         u = User(form)
@@ -101,8 +96,7 @@ def route_register(request):
     else:
         result = ''
     body = j_template('register.html', result=result)
-    r = header + '\r\n' + body
-    return r.encode(encoding='utf-8')
+    return http_response(body)
 
 
 @login_required
@@ -115,10 +109,8 @@ def route_profile(request):
     """
     username = current_user(request)
     u = User.find_by(username=username)
-    header = 'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n'
     body = j_template('profile.html', user=u)
-    r = header + '\r\n' + body
-    return r.encode(encoding='utf-8')
+    return http_response(body)
 
 
 route_dict = {
