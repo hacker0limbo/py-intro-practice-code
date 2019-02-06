@@ -1,9 +1,10 @@
 from models.todo import Todo
-from routes import template, response_with_headers, redirect, error
-from routes.routes import current_user, login_required
+from routes import j_template, response_with_headers, redirect, error
+from routes.routes import current_user, login_required, current_u
 from models.user import User
 
 
+@login_required
 def todo_index(request):
     """
     todo 首页函数
@@ -12,49 +13,33 @@ def todo_index(request):
         'Content-Type': 'text/html',
     }
     # 找到当前登录的用户, 如果没有登录, 就 redirect 到 /login
-    username = current_user(request)
-    u = User.find_by(username=username)
+    u = current_u(request)
 
-    todo_list = Todo.find_all(user_id=u.id)
-    # 生成 todo list 的 HTML 字段
-    todos = []
-    for i, t in enumerate(todo_list):
-        # 第几个 task 直接用 index 来定位, 不需要新建一个 task_id 来存储
-        edit_link = f'<a href="/todo/edit?id={t.id}">编辑</a>'
-        delete_link = f'<a href="/todo/delete?id={t.id}">删除</a>'
-        s = f'<h3>{i+1} : {t.title} {edit_link} {delete_link}</h3>'
-        todos.append(s)
-    todo_html = ''.join(todos)
-    body = template('todo_index.html')
-    body = body.replace('{{todos}}', todo_html)
-
+    todos = Todo.find_all(user_id=u.id)
+    body = j_template('todo_index.html', todos=todos)
     header = response_with_headers(headers)
     response = header + '\r\n' + body
     return response.encode('utf-8')
 
 
+@login_required
 def todo_add(request):
     """
     用于增加 todo 的路由函数
     """
-    headers = {
-        'Content-Type': 'text/html',
-    }
-    username = current_user(request)
-    u = User.find_by(username=username)
-
+    u = current_u(request)
+    u_id = u.id
     if request.method == 'POST':
         form = request.form()
+        form.update({
+            'user_id': u_id
+        })
         t = Todo(form)
-        todos = Todo.find_all(user_id=u.id)
-        Todo.add(t, u.id)
-    # 客户端发送了数据服务器处理完毕以后, 数据被写入数据库
-    # 重定向到 /todo 页面, 相当于刷新页面, 重新发送 请求到 todo 页面, 然后该页面的路由处理
-    # 先 post 到了 /todo/add, 然后 302 重定向到 /todo
-    # redirect 保证了 只在 /todo 页面查看数据
+        Todo.add(t)
     return redirect('/todo')
 
 
+@login_required
 def todo_edit(request):
     """
     编辑页面显示
@@ -74,7 +59,7 @@ def todo_edit(request):
     if t.user_id != u.id:
         # 如果 todo 的 user_id 不是 对应的 user 的 id, 无法修改该 todo
         return redirect('/login')
-    body = template('todo_edit.html')
+    body = j_template('todo_edit.html')
     body = body.replace('{{todo_id}}', str(t.id))
     body = body.replace('{{todo_title}}', str(t.title))
 
@@ -83,6 +68,7 @@ def todo_edit(request):
     return response.encode('utf-8')
 
 
+@login_required
 def todo_update(request):
     """
     修改 todo 的路由, todo_edit 页面表单发送的数据在这个路由处理
@@ -108,10 +94,10 @@ def todo_delete(request):
 
 
 route_dict = {
-    '/todo': login_required(todo_index),
-    '/todo/add': login_required(todo_add),
-    '/todo/edit': login_required(todo_edit),
-    '/todo/update': login_required(todo_update),
-    '/todo/delete': login_required(todo_delete),
+    '/todo': todo_index,
+    '/todo/add': todo_add,
+    '/todo/edit': todo_edit,
+    '/todo/update': todo_update,
+    '/todo/delete': todo_delete,
 }
 

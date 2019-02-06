@@ -1,4 +1,4 @@
-from models import Model, open_db, close_db
+from models import Model
 from utils import salted_password
 
 
@@ -22,9 +22,7 @@ class User(Model):
         self.password = salted_password(self.password)
         if User.find_by(username=self.username) is None:
             # 没找到数据, 说明可以注册
-            conn, cursor = open_db()
-            User.add(cursor, self)
-            close_db(conn, cursor)
+            User.add(self)
             return self
         else:
             return None

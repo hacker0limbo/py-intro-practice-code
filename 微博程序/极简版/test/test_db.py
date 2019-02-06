@@ -103,7 +103,7 @@ class Student:
 class TestDataBase(unittest.TestCase):
 
     def test_select_all(self):
-        self.assertListEqual(Student.select_all(), [(1, 'gua'), (2, 'gw'), (3, 'bo')])
+        self.assertListEqual(Student.select_all(), [(1, 'gua'), (2, 'gw')])
 
     def test_select_one(self):
         self.assertListEqual(Student.select_first(), [(1, 'gua')])

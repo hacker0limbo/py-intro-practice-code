@@ -1,8 +1,7 @@
-from models.message import Message
 from models.user import User
 from routes.session import session
 from utils import random_str
-from routes import template, response_with_headers, route_static, redirect, j_template
+from routes import response_with_headers, route_static, redirect, j_template
 
 
 def current_user(request):
@@ -15,11 +14,15 @@ def current_user(request):
     return username
 
 
+def current_u(request):
+    username = current_user(request)
+    u = User.find_by(username=username)
+    return u
+
+
 def current_user_id(request):
     """
     根据发送的 cookie 得到 userid
-    :param request:
-    :return:
     """
     username = current_user(request)
     u = User.find_by(username=username)
@@ -44,7 +47,8 @@ def route_index(request):
     header = 'HTTP/1.1 210 VERY OK\r\nContent-Type: text/html\r\n'
     user_id = current_user_id(request)
     user = User.find_by(id=user_id)
-    body = j_template('index.html', user=user)
+    users = User.all()
+    body = j_template('index.html', user=user, users=users)
 
     response = header + '\r\n' + body
     return response.encode(encoding='utf-8')
@@ -78,9 +82,7 @@ def route_login(request):
     else:
         # Get 请求, 打开这个页面的时候的处理
         result = ''
-    body = template('login.html')
-    body = body.replace('{{result}}', result)
-    body = body.replace('{{username}}', username)
+    body = j_template('login.html', username=username, result=result)
     # 拼接 header
     header = response_with_headers(headers)
     response = header + '\r\n' + body
@@ -98,12 +100,12 @@ def route_register(request):
             result = '用户名或者密码长度必须大于2'
     else:
         result = ''
-    body = template('register.html')
-    body = body.replace('{{result}}', result)
+    body = j_template('register.html', result=result)
     r = header + '\r\n' + body
     return r.encode(encoding='utf-8')
 
 
+@login_required
 def route_profile(request):
     """
     显示用户的个人信息界面
@@ -112,33 +114,9 @@ def route_profile(request):
     若登录了就返回个人信息
     """
     username = current_user(request)
-    print('username', username)
-    if username != '游客':
-        # 登录成功
-        u = User.find_by(username=username)
-        header = 'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n'
-        body = template('profile.html')
-        body = body.replace('{{id}}', str(u.id))
-        body = body.replace('{{username}}', u.username)
-        body = body.replace('{{note}}', u.note)
-        r = header + '\r\n' + body
-        return r.encode(encoding='utf-8')
-    else:
-        # 未登录
-        header = 'HTTP/1/1 302 Moved\r\nContent-Type: text/html\r\nLocation: /login\r\n'
-        r = header + '\r\n'
-        return r.encode(encoding='utf-8')
-
-
-def route_message(request):
-    if request.method == 'POST':
-        form = request.form()
-        msg = Message(form)
-        Message.add(msg)
+    u = User.find_by(username=username)
     header = 'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n'
-    body = template('msg.html')
-    msgs = '<br>'.join([str(m) for m in Message.all()])
-    body = body.replace('{{messages}}', msgs)
+    body = j_template('profile.html', user=u)
     r = header + '\r\n' + body
     return r.encode(encoding='utf-8')
 
@@ -149,5 +127,4 @@ route_dict = {
     '/login': route_login,
     '/register': route_register,
     '/profile': route_profile,
-    '/messages': route_message,
 }

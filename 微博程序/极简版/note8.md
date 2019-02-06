@@ -91,6 +91,10 @@ with conn:
 - `with`语句不会创造一个新的作用域, 因此 with 里面定义的变量, with 外面还是可以使用
 - `conn`直接连接一次就行, 也不用关闭, 如果有多个 module 要用到这个连接就需要使用 ORM 了.
 
+## 技巧
+
+对于测试数据库, 可以在测试开始的时候(`setUp`)建立一个数据库, 在结束的时候删除该数据库(`tearDwon`)
+
 ## Reference
 - https://stackoverflow.com/questions/6318126/why-do-you-need-to-create-a-cursor-when-querying-a-sqlite-database
 - https://stackoverflow.com/questions/19522505/using-sqlite3-in-python-with-with-keyword

@@ -4,7 +4,6 @@ from models.user import User
 
 class Weibo(Model):
     def __init__(self, form):
-        super().__init__()
         self.id = form.get('id', None)
         self.content = form.get('content', '')
         # 和别的数据关联的方式, 用 user_id 表明拥有它的 user 实例
@@ -19,7 +18,6 @@ class Weibo(Model):
 
 class Comment(Model):
     def __init__(self, form, user_id=-1):
-        super().__init__()
         self.id = form.get('id', None)
         self.content = form.get('content', '')
         # 和别的数据关联的方式, 用 user_id 表明拥有它的 user 实例

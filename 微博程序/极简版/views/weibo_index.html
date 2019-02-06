@@ -10,26 +10,31 @@
     </style>
 </head>
 <body>
-    <a href="/weibo/new">写新微博</a>
+    {% if current is sameas true %}
+        <a href="/weibo/new">写新微博</a>
+    {% endif %}
 
     {% for w in weibos %}
-    <p>
-        {{ w.content }} from {{ user.username }}
-        <a href="/weibo/delete?id={{ w.id }}">删除</a>
-        <a href="/weibo/edit?id={{ w.id }}">修改</a>
-        {% for c in w.comments() %}
-        <div class="comment">
-            {{ c.user().username }} : {{ c.content }}
-        </div>
-        {% endfor %}
-        <form action="/comment/add" method="post">
-            <input name="weibo_id" value="{{ w.id }}" readonly>
-            <br>
-            <input name="content">
-            <br>
-            <button type="submit">添加评论</button>
-        </form>
-    </p>
+        <p>
+            {{ w.content }} from {{ user.username }}
+            <a href="/weibo/delete?id={{ w.id }}">删除</a>
+            <a href="/weibo/edit?id={{ w.id }}">修改</a>
+            {% for c in w.comments() %}
+                <div class="comment">
+                    {{ c.user().username }} : {{ c.content }}
+                </div>
+            {% endfor %}
+            <form action="/comment/add" method="post">
+                <input name="weibo_id" value="{{ w.id }}" readonly>
+                <br>
+                <input name="content">
+                <br>
+                <button type="submit">添加评论</button>
+            </form>
+        </p>
+        <hr>
     {% endfor %}
+
+    <a href="/">返回主页</a>
 </body>
 </html>

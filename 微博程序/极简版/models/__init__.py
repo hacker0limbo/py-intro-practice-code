@@ -2,21 +2,32 @@ import sqlite3
 from pathlib import Path
 
 
-def open_db():
-    root = Path(__file__).parent.parent
-    db_path = str(root / 'db/data.sqlite')
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    return conn, cursor
+class dbopen:
+    """
+    上下文管理器, 自动释放资源
+    """
+    def __init__(self, path=None):
+        root = Path(__file__).parent.parent
+        db_path = str(root / 'db/data.sqlite')
+        if path is None:
+            # 默认为 data.sqlite 这个数据库
+            self.path = db_path
+        self.conn = None
+        self.cursor = None
 
+    def __enter__(self):
+        self.conn = sqlite3.connect(self.path)
+        return self.conn
 
-def close_db(conn, cursor):
-    conn.commit()
-    cursor.close()
-    conn.close()
+    def __exit__(self, exc_class, exc, traceback):
+        self.conn.commit()
+        self.conn.close()
 
 
 def dict_factory(cursor, row):
+    """
+    改变数据库返回数据的格式, 为一个字典
+    """
     d = {}
     for index, col in enumerate(cursor.description):
         d[col[0]] = row[index]
@@ -33,28 +44,21 @@ def load(table):
       },
     ]
     """
-    conn, cursor = open_db()
-    conn.row_factory = dict_factory
-    cursor = conn.cursor()
-    sql = f"""
-    SELECT
-        *
-    FROM
-        {table}
-    """
-    cursor.execute(sql)
-    result = cursor.fetchall()
-    close_db(conn, cursor)
-    return result
+    with dbopen() as conn:
+        conn.row_factory = dict_factory
+        cursor = conn.cursor()
+        sql = f"""
+        SELECT
+            *
+        FROM
+            {table}
+        """
+        cursor.execute(sql)
+        result = cursor.fetchall()
+        return result
 
 
 class Model:
-
-    @classmethod
-    def db_path(cls):
-        class_name = cls.__name__
-        path = f'db/{class_name}.txt'
-        return path
 
     @classmethod
     def all(cls):
@@ -96,7 +100,7 @@ class Model:
         return models
 
     @classmethod
-    def add(cls, cursor, m):
+    def add(cls, m):
         """
         往数据库里面添加一个新的数据
         """
@@ -110,29 +114,40 @@ class Model:
         VALUES
             ({placeholders});
         """
-        cursor.execute(sql_insert, tuple(attr.values()))
+        with dbopen() as conn:
+            cursor = conn.cursor()
+            cursor.execute(sql_insert, tuple(attr.values()))
 
     @classmethod
-    def delete(cls, cursor, id):
+    def delete(cls, id):
         sql_delete = f'''
         DELETE FROM
             {cls.__name__}
         WHERE
             id=?
         '''
-        cursor.execute(sql_delete, (id,))
+        with dbopen() as conn:
+            cursor = conn.cursor()
+            cursor.execute(sql_delete, (id,))
 
     @classmethod
-    def update(cls, cursor, id, content):
+    def update(cls, id, **kwargs):
+        """
+        根据 id 更新表中的一个数据, **kwargs 为 字段=值 这种形式
+        """
+        columns = ', '.join([f'`{k}`=?'for k in kwargs.keys()])
+        values = tuple(kwargs.values()) + (id,)
         sql_update = f'''
         UPDATE
             {cls.__name__}
         SET
-            content=?
+            {columns}
         WHERE
             id=?
         '''
-        cursor.execute(sql_update, (content, id))
+        with dbopen() as conn:
+            cursor = conn.cursor()
+            cursor.execute(sql_update, values)
 
     def __repr__(self):
         """
