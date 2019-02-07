@@ -91,6 +91,40 @@ with conn:
 - `with`语句不会创造一个新的作用域, 因此 with 里面定义的变量, with 外面还是可以使用
 - `conn`直接连接一次就行, 也不用关闭, 如果有多个 module 要用到这个连接就需要使用 ORM 了.
 
+## sql 注入
+
+用户可以在发送的数据里面伪造 sql 拼接字符串注入到代码里面, 典型的比如不使用`?`作为占位符, 比如:
+
+登录需要输入账号和密码, 输入以后表单提交到服务器, 用 select 语句查询数据库里面是否存在这样的用户, 如果 select 语句如下
+
+```python
+def select(conn, form):
+    cursor = conn.cursor()
+    uname = form.get('username', '')
+    pwd = form.get('password', '')
+    sql = """
+    SELECT 
+        *
+    FROM
+        User
+    WHERE
+        username="{}" and password="{}"
+    """.format(uname, pwd)
+
+    cursor.execuate(sql)
+    return cursor.fetchall()
+```
+
+假设以上代码, 用户提交的数据为:
+
+```python
+form = {
+    'username': 'bobo" or "1"="1'
+    'password' = ''
+}
+```
+那么 sql 语句就变成了`Where username="bobo" or "1"="1" and password=""`, 这里 username 是正确的情况下该语句恒成立(先执行 and 再执行 or), 所以可以不用输入密码就登录.
+
 ## 技巧
 
 对于测试数据库, 可以在测试开始的时候(`setUp`)建立一个数据库, 在结束的时候删除该数据库(`tearDwon`)
