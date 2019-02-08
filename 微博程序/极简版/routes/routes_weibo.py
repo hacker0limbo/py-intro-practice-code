@@ -89,6 +89,7 @@ def comment_add(request):
     增加 一个评论
     """
     uid = current_user_id(request)
+    weibo_u_id = int(request.query.get('user_id', -1))
     form = request.form()
     weibo_id = form.get('weibo_id', -1)
     new_form = {
@@ -99,7 +100,7 @@ def comment_add(request):
     comment = Comment(form)
 
     Comment.add(comment)
-    return redirect(f'/weibo/index?user_id={str(uid)}')
+    return redirect(f'/weibo/index?user_id={str(weibo_u_id)}')
 
 
 route_dict = {

@@ -17,8 +17,11 @@
     {% for w in weibos %}
         <p>
             {{ w.content }} from {{ user.username }}
-            <a href="/weibo/delete?id={{ w.id }}">删除</a>
-            <a href="/weibo/edit?id={{ w.id }}">修改</a>
+            {% if current is sameas true %}
+                <a href="/weibo/delete?id={{ w.id }}">删除</a>
+                <a href="/weibo/edit?id={{ w.id }}">修改</a>
+            {% endif %}
+
             {% for c in w.comments() %}
                 <div class="comment">
                     {{ c.user().username }} : {{ c.content }}

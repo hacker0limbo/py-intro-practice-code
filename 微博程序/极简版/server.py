@@ -4,6 +4,7 @@ from routes import error
 from routes.routes import route_dict
 from routes.routes_todo import route_dict as todo_route
 from routes.routes_weibo import route_dict as weibo_route
+import threading
 
 
 class Request:
@@ -54,9 +55,6 @@ class Request:
         return f
 
 
-request = Request()
-
-
 def parsed_path(path_with_query):
     """
     path_with_query 是路径, 包括 path 和 query, 如/name?a=1&b=2
@@ -103,7 +101,7 @@ def parsed_header_line(header_line):
     return method, path, protocol
 
 
-def response_for_path(path):
+def response_for_path(path, request):
     """
     路由处理函数, 根据 path 的不同调用 routes.py 里面的不同路由函数
     默认为 error
@@ -127,33 +125,42 @@ def response_for_path(path):
     return response(request)
 
 
-def run(host='', port=2000):
+def process_request(connection):
+    print('连接成功, 使用多线程处理请求', threading.current_thread().name)
+    req = connection.recv(1024)
+    req = req.decode('utf-8')
+
+    # 防止 Chrome 发送空请求
+    if len(req.split()) < 2:
+        connection.close()
+    header_line, headers, body = parsed_request(req)
+    method, path, protocol = parsed_header_line(header_line)
+    # 新建一个 request 实例
+    request = Request()
+
+    request.method = method
+    request.body = body
+    request.headers = parsed_headers(headers)
+    request.add_cookies()
+
+    response = response_for_path(path, request)
+    # 把响应发送给客户端
+    connection.sendall(response)
+    # 处理完请求, 关闭连接
+    connection.close()
+
+
+def run(host='', port=3000):
     with socket.socket() as s:
         s.bind((host, port))
 
         while True:
             s.listen(5)
             connection, address = s.accept()
-            # 接受请求
-            req = connection.recv(1024)
-            req = req.decode('utf-8')
 
-            # 防止 Chrome 发送空请求
-            if len(req.split()) < 2:
-                continue
-            header_line, headers, body = parsed_request(req)
-            method, path, protocol = parsed_header_line(header_line)
-
-            request.method = method
-            request.body = body
-            request.headers = parsed_headers(headers)
-            request.add_cookies()
-
-            response = response_for_path(path)
-            # 把响应发送给客户端
-            connection.sendall(response)
-            # 处理完请求, 关闭连接
-            connection.close()
+            # 开一个新的线程来处理请求, 第二个参数是传给新函数的参数列表, 必须是 tuple
+            t = threading.Thread(target=process_request, args=(connection,))
+            t.start()
 
 
 if __name__ == '__main__':
