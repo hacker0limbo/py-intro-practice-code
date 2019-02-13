@@ -1,3 +1,4 @@
+import json
 from jinja2 import Environment, FileSystemLoader
 from pathlib import Path
 from routes.session import session
@@ -77,14 +78,21 @@ def route_static(request):
         query = {
             'file', 'doge.gif',
         }
-    被路由捕获, 调用该函数
+    注意, 可能会是其他静态文件, 比如 js, css, 可以根据 后缀名 设置不同的 Content-Type
     """
-    filename = request.query.get('file', 'doge.gif')
+    filename = request.query.get('file', '')
+    file_ext = filename.split('.')[-1]
+    extensions = {
+        'js': b'Content-Type: text/javascript\r\n',
+        'css': b'Content-Type: text/css\r\n',
+        'gif': b'Content-Type: image/gif\r\n',
+    }
     path = 'static/' + filename
     with open(path, 'rb') as f:
-        header = b'HTTP/1.1 200 OK\r\nContent-Type: image/gif\r\n'
-        img = header + b'\r\n'+ f.read()
-        return img
+        header = b'HTTP/1.1 200 OK\r\n'
+        header += extensions.get(file_ext, b'')
+        data = header + b'\r\n'+ f.read()
+        return data
 
 
 def http_response(body, headers=None):
@@ -96,4 +104,19 @@ def http_response(body, headers=None):
         header = response_with_headers(headers)
     response = header + '\r\n' + body
     return response.encode('utf-8')
+
+
+def json_response(data):
+    """
+    返回 json 格式的 body 数据(页面)
+    前端就可以发送 ajax 到该页面获取 json 格式的字符串
+
+    data 为 列表或字典
+    json.dumps 用于把 list 或者 dict 转化为 json 格式的字符串
+    ensure_ascii=False 可以正确处理中文
+    """
+    header = 'HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n'
+    body = json.dumps(data, ensure_ascii=False, indent=2)
+    r = header + '\r\n' + body
+    return r.encode(encoding='utf-8')
 

@@ -6,21 +6,16 @@
 </head>
 <body>
     <h1>TODO</h1>
-    <form action="/todo/add" method="post">
-        <input type="text" name="title" placeholder="请输入todo">
-        <br>
-        <button type="submit">添加</button>
-    </form>
-    <div>
-        <h3>
-            {% for todo in todos %}
-                {{ loop.index }}. {{ todo.title }}
-                <a href="/todo/edit?id={{ todo.id }}">编辑</a>
-                <a href="/todo/delete?id={{ todo.id }}">删除</a>
-                <br>
-            {% endfor %}
-        </h3>
+    <input placeholder="请输入todo" id="id-input-todo">
+    <button id="id-button-add">添加</button>
+    <div class="todo-list">
+        <!-- 添加 todo -->
     </div>
     <a href="/">返回主页</a>
+
+    <script src='/static?file=utils.js'></script>
+    <script src='/static?file=api_todo.js'></script>
+    <script src='/static?file=todo.js'></script>
+
 </body>
 </html>

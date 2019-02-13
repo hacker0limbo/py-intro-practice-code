@@ -149,6 +149,14 @@ class Model:
             cursor = conn.cursor()
             cursor.execute(sql_update, values)
 
+    def json_parse(self):
+        """
+        返回当前实例对象属性的 字典 表示
+        """
+        d = self.__dict__.copy()
+        return d
+
+
     def __repr__(self):
         """
         当调用 str(o) 的时候

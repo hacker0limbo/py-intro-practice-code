@@ -5,6 +5,7 @@ from routes import error
 from routes.routes import route_dict
 from routes.routes_todo import route_dict as todo_route
 from routes.routes_weibo import route_dict as weibo_route
+from routes.routes_todo_api import route_dict as api_todo_route
 import threading
 
 
@@ -128,6 +129,7 @@ def response_for_path(path, request):
         # path('/'): 路由函数,
         404: error
     }
+    routes.update(api_todo_route)
     routes.update(route_dict)
     routes.update(todo_route)
     routes.update(weibo_route)
