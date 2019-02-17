@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>留言板</title>
+</head>
+<body>
+    <h1>留言板</h1>
+    <form action="/message" method="GET">
+        这是一个发送 GET 请求的表单
+        <br>
+        <textarea name="msg"></textarea>
+        <br>
+        <button type="submit">用 GET 提交表单</button>
+    </form>
+
+    <form action="/message/add" method="POST">
+        这是一个发送 POST 请求的表单
+        <br>
+        <textarea name="msg_post"></textarea>
+        <br>
+        <button type="submit">用 POST 提交表单</button>
+    </form>
+
+    {% for m in messages %}
+        <div>{{ m.content }}</div>
+    {% endfor %}
+</body>
+</html>
