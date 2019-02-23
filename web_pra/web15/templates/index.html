@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>主页</title>
+</head>
+<body>
+    <h1>Hello {{ user.username if user != None else '游客' }}</h1>
+    <h2>
+        <a href="{{ url_for('index.profile') }}">个人资料页面</a>
+    </h2>
+    <form method="post" action="{{ url_for('index.register') }}">
+        <fieldset>
+            <legend>Register</legend>
+
+            <label>username: </label>
+            <input name="username" title="enter username">
+            <br>
+
+            <label>password: </label>
+            <input name="password" title="enter password">
+            <br>
+            <button type="submit">注册</button>
+        </fieldset>
+    </form>
+
+    <form method="post" action="{{ url_for('index.login') }}">
+        <fieldset>
+            <legend>Login</legend>
+            <label>username: </label>
+            <input name="username" title="enter username">
+            <br>
+
+            <label>password: </label>
+            <input name="password" title="enter password">
+            <br>
+            <button type="submit">登录</button>
+
+        </fieldset>
+    </form>
+</body>
+</html>

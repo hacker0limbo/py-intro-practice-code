@@ -1,6 +1,7 @@
 from models import db
 from utils import sha256
 
+
 class User(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
@@ -22,10 +23,15 @@ class User(db.Model):
         db.session.commit()
 
     @classmethod
+    def find_by(cls, **kwargs):
+            return cls.query.filter_by(**kwargs).first()
+
+    @classmethod
     def register(cls, form: dict):
         name = form.get('username', '')
         pwd = form.get('password', '')
-        if len(name) > 2 and cls.query.filter_by(username=name) is None:
+        if len(name) > 2 and cls.find_by(username=name) is None:
+            print('未注册过')
             # 说明未注册过
             u = cls(form)
             u.password = u.salted_password(pwd)
@@ -37,8 +43,8 @@ class User(db.Model):
     @classmethod
     def validate_login(cls, form: dict):
         u = cls(form)
-        user = cls.query.filter_by(username=u.username)
+        # 这里注意查询的时候需要使用 .first() 可以保证当没有查询到的时候可以返回 None
+        user = cls.find_by(username=u.username)
         if user is not None and user.password == u.salted_password(u.password):
             return user
-        else:
-            return None
+        return None
