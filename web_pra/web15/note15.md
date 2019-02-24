@@ -1,6 +1,35 @@
 # note15
 
-session 和 cookie, 微博套路
+session 和 cookie, 留言版和微博套路
+
+## flask-sqlalchemy
+
+声明一个基类需要如下:
+
+```python
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.ext.declarative import declared_attr
+
+db = SQLAlchemy()
+
+class Model(db.Model):
+    __abstract__ = True
+
+    @declared_attr
+    def __tablename__(cls):
+        return cls.__name__.lower() + 's'
+
+"""
+__abstrat__ 表明该类不会被创建, 作为虚拟使用
+@declared_attr 可以声明表的属性, 比如这里声明表的名字为 小写的类名+s
+"""
+```
+
+## 动态路由在模板里面需要传递参数的时候如下:
+```jinja2
+<a href={{ url_for('message.delete', message_id=m.id) }}>删除评论</a>
+<!-- 其中 message_id 为路由函数参数, m.id 为传入的值 -->
+```
 
 ## session 和 cookie
 
@@ -15,7 +44,10 @@ session 比 cookie 更加安全, 使用 session
     通过 session_id 中间接口获得用户
 3. flask 里面直接使用 app.secret_key 进行 session 的加密, 然后直接使用 session['username'] = 'a' 设置 session
 
-比如在用户登录以后设置 session 保存用户的登录状态
+登录和登出:
+登录: 增加 session, 记录状态
+登出: 删除 session, session.pop() 消除状态
+
 
 ### 如何设置
 

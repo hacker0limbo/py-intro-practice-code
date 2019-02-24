@@ -55,6 +55,13 @@ def login():
         return redirect(url_for('index.profile'))
 
 
+@index_bp.route('/logout', methods=['GET'])
+def logout():
+    # 退出登录即为清除 session
+    session.pop('user_id')
+    return redirect(url_for('index.index'))
+
+
 @index_bp.route('/profile')
 def profile():
     u = current_user()

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>留言板</title>
+    <link href="//cdn.bootcss.com/bootstrap/4.0.0-alpha.6/css/bootstrap.css" rel="stylesheet">
+</head>
+<body>
+
+<h1>留言板</h1>
+<form method="POST" action={{ url_for('message.add') }}>
+    <input class="form-control" type="text" name="content" placeholder="message">
+    <input class="form-control" type="text" name="author" placeholder="author">
+    <button class="btn btn-primary" type="submit">提交留言</button>
+</form>
+
+<div>
+    {% for m in messages %}
+        <div class="alert alert-success" role="alert">
+            {{ m.content }} for {{ m.author }} @ {{ m.current_time() }}
+            <a href={{ url_for('message.delete', message_id=m.id) }}>删除评论</a>
+        </div>
+    {% endfor %}
+
+    <button type="button" class="btn btn-link">
+        <a href={{ url_for('index.index') }}>返回主页</a>
+    </button>
+
+
+</div>
+
+</body>
+</html>

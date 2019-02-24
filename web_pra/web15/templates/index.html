@@ -38,5 +38,17 @@
 
         </fieldset>
     </form>
+
+    {% if user != None %}
+        <form method="GET" action={{ url_for("index.logout") }}>
+            <button type="submit">退出登录</button>
+        </form>
+
+        <div>
+            链接:
+            <a href={{ url_for("message.index") }}>留言板</a>
+        </div>
+    {% endif %}
+
 </body>
 </html>

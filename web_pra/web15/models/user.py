@@ -1,8 +1,8 @@
-from models import db
+from models import db, Model
 from utils import sha256
 
 
-class User(db.Model):
+class User(Model):
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20))
@@ -18,20 +18,10 @@ class User(db.Model):
         return hash2
 
     @classmethod
-    def add(cls, user):
-        db.session.add(user)
-        db.session.commit()
-
-    @classmethod
-    def find_by(cls, **kwargs):
-            return cls.query.filter_by(**kwargs).first()
-
-    @classmethod
     def register(cls, form: dict):
         name = form.get('username', '')
         pwd = form.get('password', '')
         if len(name) > 2 and cls.find_by(username=name) is None:
-            print('未注册过')
             # 说明未注册过
             u = cls(form)
             u.password = u.salted_password(pwd)
